@@ -13,6 +13,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: install pnpm
+        run: npm install -g pnpm
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
