@@ -35,7 +35,8 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           project_id: 'linebot-460513'
-          workload_identity_provider:
+          workload_identity_provider: 'projects/643300078736/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'cloudrun-deployer@linebot-460513.iam.gserviceaccount.com'
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
