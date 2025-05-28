@@ -1,0 +1,54 @@
+name: Deploy to Cloud Run Functions reliable-family-finance
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # setup for build
+
+      - name: Checkout repository
+        uses: 'actions/checkout@v4'
+
+      - name: Set up Node.js
+        uses: 'actions/setup-node@v4'
+        with:
+          node-version-file: .node-version
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      # build
+      - name: Build the project
+        run: pnpm build
+
+      # setup for deployment
+      - name: Set up Google Cloud credentials
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'linebot-460513'
+          workload_identity_provider:
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      # deploy
+      - name: Deploy to Cloud Functions
+        run: |
+          gcloud functions deploy line-event-handler \
+            --project=linebot-460513 \
+            --region=asia-east1 \
+            --runtime=nodejs22 \
+            --source=. \
+            --entry-point=main \
+            --gen2 \
+            --trigger-http \
+            --allow-unauthenticated
