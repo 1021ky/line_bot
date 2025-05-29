@@ -27,7 +27,9 @@ jobs:
           cache-dependency-path: 'pnpm-lock.yaml'
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: 'pnpm/action-setup@v2'
+        with:
+          version: 10
 
       - name: Install dependencies
         run: pnpm install
