@@ -56,5 +56,5 @@ jobs:
             --entry-point=main \
             --gen2 \
             --trigger-http \
-            --allow-unauthenticated
+            --allow-unauthenticated \
             --service-account=cloudrun-deployer@linebot-460513.iam.gserviceaccount.com
