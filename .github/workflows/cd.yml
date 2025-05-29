@@ -57,3 +57,4 @@ jobs:
             --gen2 \
             --trigger-http \
             --allow-unauthenticated
+            --service-account=cloudrun-deployer@linebot-460513.iam.gserviceaccount.com
