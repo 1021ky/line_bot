@@ -24,6 +24,7 @@ jobs:
         with:
           node-version-file: .node-version
           cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
 
       - name: Install pnpm
         run: npm install -g pnpm
