@@ -8,7 +8,6 @@ jest.mock('../../log/logger', () => ({
         error: jest.fn(),
     },
 }));
-
 const makeReq = (body: unknown, secret: string | undefined, signature?: string) => {
     const rawBody = JSON.stringify(body);
     const sig = signature !== undefined ? signature : (secret ? crypto.createHmac('sha256', secret).update(rawBody).digest('base64') : undefined);

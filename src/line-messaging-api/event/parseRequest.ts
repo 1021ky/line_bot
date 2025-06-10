@@ -1,5 +1,5 @@
 import { SignatureValidator } from './signatureValidator';
-import { EventParser } from './eventParser';
+import { parseEvent } from './eventParser';
 import logger from '../../log/logger';
 import { Request } from '@google-cloud/functions-framework';
 
@@ -17,7 +17,7 @@ export function parseRequest(req: Request): unknown | null {
         logger.error('Signature validation failed');
         return null;
     }
-    const event = EventParser.parse(req.body);
+    const event = parseEvent(req.body);
     if (!event) {
         logger.error('Event parse failed');
         return null;
