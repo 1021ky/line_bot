@@ -4,7 +4,8 @@ describe('logger', () => {
     let spy: jest.SpyInstance;
 
     beforeEach(() => {
-        spy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+        // @ts-expect-error: console._stdoutはNode.jsの内部で使用されるため、型定義がない
+        spy = jest.spyOn(console._stdout, 'write').mockImplementation(() => true);
     });
 
     afterEach(() => {
