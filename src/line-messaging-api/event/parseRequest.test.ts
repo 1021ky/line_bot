@@ -10,7 +10,7 @@ jest.mock('../../log/logger', () => ({
 }));
 const makeReq = (body: unknown, secret: string | undefined, signature?: string) => {
     const rawBody = JSON.stringify(body);
-    const sig = signature !== undefined ? signature : (secret ? crypto.createHmac('sha256', secret).update(rawBody).digest('base64') : undefined);
+    const sig = signature !== undefined ? signature : (secret ? crypto.createHmac('SHA256', secret).update(rawBody).digest('base64') : undefined);
     return {
         headers: { 'x-line-signature': sig },
         rawBody,
@@ -28,17 +28,16 @@ describe('parseRequest', () => {
 
     it('署名検証に失敗した場合はnullを返す', () => {
         const req = makeReq({ destination: 'Uxxxxxxxxxx', events: [] }, 'testsecret', 'invalidsig');
-        expect(parseRequest(req)).toBeNull();
+        expect(parseRequest(req, 'testsecret')).toBeNull();
     });
 
     it('パースできない場合はnullを返す', () => {
         // eventsが配列でない場合など、パースできないケース
         const req = makeReq({ destination: 'Uxxxxxxxxxx', events: null }, 'testsecret');
-        expect(parseRequest(req)).toBeNull();
+        expect(parseRequest(req, 'testsecret')).toBeNull();
     });
 
     it('署名検証もパースも成功した場合はeventを返す', () => {
-        // https://developers.line.biz/ja/reference/messaging-api/#webhook-event-objects に沿って作成したテストデータ
         const body = {
             destination: 'Uxxxxxxxxxx',
             events: [
@@ -70,6 +69,6 @@ describe('parseRequest', () => {
             userId: 'U80696558e1aa831...',
             raw: body.events[0]
         };
-        expect(parseRequest(req)).toEqual(expected);
+        expect(parseRequest(req, 'testsecret')).toEqual(expected);
     });
 });

@@ -1,8 +1,6 @@
-import { SignatureValidator } from './signatureValidator';
-import { parseEvent } from './eventParser';
 import logger from '../../log/logger';
 import { Request } from '@google-cloud/functions-framework';
-
+import { validateSignature, WebhookRequestBody, LINE_SIGNATURE_HTTP_HEADER_NAME, WebhookEvent } from '@line/bot-sdk';
 /**
  * イベントパースを行い、成功時はevent、失敗時はnullを返す
  *
@@ -10,17 +8,20 @@ import { Request } from '@google-cloud/functions-framework';
  * @param req HTTPリクエスト
  * @returns eventオブジェクトまたはnull
  */
-export function parseRequest(req: Request): unknown | null {
-    const signature = req.headers['x-line-signature'] as string | undefined;
-    const rawBody = req.rawBody ? req.rawBody.toString() : JSON.stringify(req.body);
-    if (!SignatureValidator.validate(signature, rawBody)) {
+export async function parseRequest(req: Request, lineChannelSecret: string): Promise<WebhookEvent[] | null> {
+    const signature = req.headers[LINE_SIGNATURE_HTTP_HEADER_NAME] as string | undefined;
+    if (!signature) {
+        logger.error('Signature header is missing');
+        return Promise.resolve(null);
+    }
+    if (!validateSignature(req.rawBody as Buffer, lineChannelSecret, signature)) {
         logger.error('Signature validation failed');
-        return null;
+        return Promise.resolve(null);
     }
-    const event = parseEvent(req.body);
-    if (!event) {
-        logger.error('Event parse failed');
-        return null;
+    const body = req.body as WebhookRequestBody | undefined;
+    if (!body) {
+        logger.error('Invalid request body format');
+        return Promise.resolve(null);
     }
-    return event;
+    return body.events;
 }
