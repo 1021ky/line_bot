@@ -1,6 +1,6 @@
 import * as functions from '@google-cloud/functions-framework';
 import logger from './log/logger'
-import { parseRequest } from './line-messaging-api/event/parseRequest';
+import { parseRequest } from './line-messaging-api/request/parseRequest';
 import { WebhookEvent } from '@line/bot-sdk';
 import { config } from './config';
 import { handleEvents } from './line-messaging-api/event/handleEvents';
