@@ -1,13 +1,15 @@
-import { parseRequest } from './parseRequest';
-import { Request } from '@google-cloud/functions-framework';
-import * as crypto from 'crypto';
-
 jest.mock('../../log/logger', () => ({
     __esModule: true,
     default: {
         error: jest.fn(),
     },
 }));
+
+import { parseRequest } from './parseRequest';
+import { Request } from '@google-cloud/functions-framework';
+import * as crypto from 'crypto';
+import logger from '../../log/logger';
+
 const makeReq = (body: unknown, secret: string | undefined, signature?: string) => {
     const rawBody = JSON.stringify(body);
     const sig = signature !== undefined ? signature : (secret ? crypto.createHmac('SHA256', secret).update(rawBody).digest('base64') : undefined);
@@ -29,11 +31,13 @@ describe('parseRequest', () => {
     it('署名検証に失敗した場合はnullを返す', async () => {
         const req = makeReq({ destination: 'Uxxxxxxxxxx', events: [] }, 'testsecret', 'invalidsig');
         await expect(parseRequest(req, 'testsecret')).resolves.toBeNull();
+        expect(logger.error).toHaveBeenCalled();
     });
 
     it('パースできない場合はnullを返す', async () => {
-        const req = makeReq({ destination: 'Uxxxxxxxxxx', events: null }, 'testsecret');
+        const req = makeReq({ foofoo: 'Uxxxxxxxxxx', hogehoge: null }, 'testsecret');
         await expect(parseRequest(req, 'testsecret')).resolves.toBeNull();
+        expect(logger.error).toHaveBeenCalled();
     });
 
     it('署名検証もパースも成功した場合はeventを返す', async () => {

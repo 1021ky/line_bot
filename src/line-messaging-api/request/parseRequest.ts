@@ -18,10 +18,19 @@ export async function parseRequest(req: Request, lineChannelSecret: string): Pro
         logger.error('Signature validation failed');
         return Promise.resolve(null);
     }
-    const body = req.body as WebhookRequestBody | undefined;
-    if (!body) {
+    if (!isWebhookRequestBody(req.body)) {
         logger.error('Invalid request body format');
         return Promise.resolve(null);
     }
+    const body = req.body as WebhookRequestBody;
     return body.events;
+}
+
+function isWebhookRequestBody(body: unknown): body is WebhookRequestBody {
+    return (
+        typeof body === 'object' &&
+        body !== null &&
+        Array.isArray((body as WebhookRequestBody).events) &&
+        (body as WebhookRequestBody).destination !== undefined
+    );
 }
