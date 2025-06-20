@@ -1,16 +1,18 @@
-import { JoinEvent, LeaveEvent, MessageEvent, WebhookEvent, TextEventMessage, EventMessage } from '@line/bot-sdk';
+import { JoinEvent, LeaveEvent, MessageEvent, WebhookEvent, EventMessage } from '@line/bot-sdk';
+import logger from '../../log/logger';
+import { TextEventMessageWithItself } from 'types/external/text-event-message-with-itself';
 
 export function handleEvents(events: WebhookEvent[]) {
     events.forEach(event => {
         if (event.type === 'join') {
             const joinEvent = event as JoinEvent;
-            console.log('Join event:', joinEvent);
+            logger.debug('Join event:', joinEvent);
         } else if (event.type === 'leave') {
             const leaveEvent = event as LeaveEvent;
-            console.log('Leave event:', leaveEvent);
+            logger.debug('Leave event:', leaveEvent);
         } else if (event.type === 'message') {
             const messageEvent = event as MessageEvent;
-            console.log('Message event:', messageEvent);
+            logger.debug('Message event:', messageEvent);
             handleEventMessage(messageEvent.message);
         }
     });
@@ -18,8 +20,9 @@ export function handleEvents(events: WebhookEvent[]) {
 
 function handleEventMessage(message: EventMessage) {
     if (message.type === 'text') {
-        const textMessage = message as TextEventMessage;
-        console.log('you said: ', textMessage.text); // ここでメッセージの内容を処理する
-        return;
+        const textMessage = message as TextEventMessageWithItself;
+        if (textMessage.mention && textMessage.mention.mentionees && textMessage.mention.mentionees.some(m => m.itself)) {
+            logger.debug('you said: ', textMessage.text);
+        }
     }
 }
