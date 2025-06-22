@@ -2,13 +2,14 @@ jest.mock('../../log/logger', () => ({
     __esModule: true,
     default: {
         debug: jest.fn(),
+        info: jest.fn(),
     },
 }));
 
 import { handleEvents } from './handleEvents';
 import { WebhookEvent, JoinEvent, LeaveEvent, MessageEvent, TextEventMessage } from '@line/bot-sdk';
 import logger from '../../log/logger';
-import { TextEventMessageWithItself } from '../../types/external/text-event-message-with-itself';
+import { TextEventMessageWithIsSelf } from '../../types/external/text-event-message-with-isself';
 
 describe('handleEvents', () => {
     afterEach(() => {
@@ -69,14 +70,14 @@ describe('handleEvents', () => {
     });
 
     it('ボットへのメンションがあるtextメッセージならログを出力する', () => {
-        const message: TextEventMessageWithItself = {
+        const message: TextEventMessageWithIsSelf = {
             type: 'text',
             id: 'id',
-            text: 'hello mention',
+            text: '@bot hello mention',
             quoteToken: 'quoteToken',
             mention: {
                 mentionees: [
-                    { index: 0, length: 5, userId: 'bot', type: 'user', itself: true }
+                    { index: 0, length: 5, userId: 'bot', type: 'user', isSelf: true }
                 ]
             }
         };
@@ -91,7 +92,7 @@ describe('handleEvents', () => {
             deliveryContext: { isRedelivery: false },
         };
         handleEvents([event]);
-        expect(logger.debug).toHaveBeenCalledWith('you said: ', message.text);
+        expect(logger.info).toHaveBeenCalledWith('I was said: @bot hello mention');
     });
 
     it('処理対象のイベントが複数来たときすべて処理する', () => {

@@ -1,8 +1,9 @@
 import { JoinEvent, LeaveEvent, MessageEvent, WebhookEvent, EventMessage } from '@line/bot-sdk';
 import logger from '../../log/logger';
-import { TextEventMessageWithItself } from 'types/external/text-event-message-with-itself';
+import { TextEventMessageWithIsSelf } from 'types/external/text-event-message-with-isself';
 
 export function handleEvents(events: WebhookEvent[]) {
+    logger.info('events:', events)
     events.forEach(event => {
         if (event.type === 'join') {
             const joinEvent = event as JoinEvent;
@@ -20,9 +21,9 @@ export function handleEvents(events: WebhookEvent[]) {
 
 function handleEventMessage(message: EventMessage) {
     if (message.type === 'text') {
-        const textMessage = message as TextEventMessageWithItself;
-        if (textMessage.mention && textMessage.mention.mentionees && textMessage.mention.mentionees.some(m => m.itself)) {
-            logger.debug('you said: ', textMessage.text);
+        const textMessage = message as TextEventMessageWithIsSelf;
+        if (textMessage.mention && textMessage.mention.mentionees && textMessage.mention.mentionees.some(m => m.isSelf)) {
+            logger.info('I was said: ' + textMessage.text);
         }
     }
 }
