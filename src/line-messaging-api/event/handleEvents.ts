@@ -2,6 +2,10 @@ import { JoinEvent, LeaveEvent, MessageEvent, WebhookEvent, EventMessage } from 
 import logger from '../../log/logger';
 import { TextEventMessageWithIsSelf } from 'types/external/text-event-message-with-isself';
 
+/**
+ * LINE Messaging APIのWebhookイベントを処理する関数
+ * @param events WebhookEventの配列
+ */
 export function handleEvents(events: WebhookEvent[]) {
     logger.info('events:', events)
     events.forEach(event => {
