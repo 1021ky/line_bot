@@ -1,6 +1,6 @@
 import { JoinEvent, LeaveEvent, MessageEvent, WebhookEvent, EventMessage } from '@line/bot-sdk';
 import logger from '../../log/logger';
-import { TextEventMessageWithIsSelf } from 'types/external/text-event-message-with-isself';
+import { TextEventMessageWithIsSelf } from '../../types/external/text-event-message-with-isself';
 
 /**
  * LINE Messaging APIのWebhookイベントを処理する関数
