@@ -14,12 +14,14 @@ export function handleEvents(events: WebhookEvent[]) {
         } else if (event.type === 'message') {
             const messageEvent = event as MessageEvent;
             logger.debug('Message event:', messageEvent);
-            handleEventMessage(messageEvent.message);
+            handleEventMessage(messageEvent);
         }
     });
 }
 
-function handleEventMessage(message: EventMessage) {
+function handleEventMessage(event: MessageEvent) {
+    const message = event.message as EventMessage;
+    // TODO: 対応対象であるか判別する関数を定義して、ここで呼び出す
     if (message.type === 'text') {
         const textMessage = message as TextEventMessageWithIsSelf;
         if (textMessage.mention && textMessage.mention.mentionees && textMessage.mention.mentionees.some(m => m.isSelf)) {
