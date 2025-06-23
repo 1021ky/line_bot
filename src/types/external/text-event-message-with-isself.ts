@@ -1,6 +1,5 @@
 import { TextEventMessage } from '@line/bot-sdk';
 
-//
 export type MentioneeWithIsSelf = {
     index: number;
     length: number;
