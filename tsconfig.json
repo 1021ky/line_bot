@@ -26,6 +26,7 @@
     // "useDefineForClassFields": true,                  /* Emit ECMAScript-standard-compliant class fields. */
     // "moduleDetection": "auto",                        /* Control what method is used to detect module-format JS files. */
     /* Modules */
+    // Using CommonJS modules for compatibility with Node.js and existing tooling; adjust if migrating to ES modules.
     "module": "commonjs", /* Specify what module code is generated. */
     "rootDir": "src", /* Specify the root folder within your source files. */
     "moduleResolution": "node", /* Specify how TypeScript looks up a file from a given module specifier. */
