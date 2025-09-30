@@ -10,7 +10,7 @@
             "name": "Debug Jest Tests",
             "runtimeExecutable": "pnpm",
             "runtimeArgs": [
-                "${workspaceRoot}/node_modules/.bin/jest",
+                "jest",
                 "--runInBand",
                 "--watchAll=false"
             ],

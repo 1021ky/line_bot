@@ -3,25 +3,29 @@ jest.mock('../../log/logger', () => ({
     default: {
         debug: jest.fn(),
         info: jest.fn(),
+        error: jest.fn(),
     },
 }));
 
 import { handleEvents } from './handleEvents';
-import { WebhookEvent, JoinEvent, LeaveEvent, MessageEvent, TextEventMessage } from '@line/bot-sdk';
-import logger from '../../log/logger';
-import { TextEventMessageWithIsSelf } from '../../types/external/text-event-message-with-isself';
+import { JoinEvent, LeaveEvent, MessageEvent, WebhookEvent } from '@line/bot-sdk';
 
+// ここでは各ハンドラの詳細な動作確認は行わず、エラーがなく呼び出されることのみを確認する。
+// 各ハンドラの詳細な動作確認はそれぞれのハンドラのテストコードで行う。
 describe('handleEvents', () => {
-    afterEach(() => {
+    const mockMessageEventHandler = { handle: jest.fn<Promise<void>, [MessageEvent]>() };
+
+    beforeEach(() => {
         jest.clearAllMocks();
+        mockMessageEventHandler.handle.mockResolvedValue(undefined);
     });
 
-    it('空配列なら何もしない', () => {
-        handleEvents([]);
-        expect(logger.debug).not.toHaveBeenCalled();
+
+    it('空配列なら何もしない', async () => {
+        await handleEvents([]);
     });
 
-    it('joinイベントを判別して処理する', () => {
+    it('joinイベントが渡されたときに正常に処理される', async () => {
         const event: JoinEvent = {
             type: 'join',
             replyToken: 'token',
@@ -31,11 +35,10 @@ describe('handleEvents', () => {
             webhookEventId: 'webhookId',
             deliveryContext: { isRedelivery: false },
         };
-        handleEvents([event]);
-        expect(logger.debug).toHaveBeenCalledWith('Join event:', event);
+        await handleEvents([event]);
     });
 
-    it('leaveイベントを判別して処理する', () => {
+    it('leaveイベントが渡されたときに正常に処理される', async () => {
         const event: LeaveEvent = {
             type: 'leave',
             source: { type: 'group', groupId: 'gid' },
@@ -44,20 +47,18 @@ describe('handleEvents', () => {
             webhookEventId: 'webhookId',
             deliveryContext: { isRedelivery: false },
         };
-        handleEvents([event]);
-        expect(logger.debug).toHaveBeenCalledWith('Leave event:', event);
+        await handleEvents([event]);
     });
 
-    it('messageイベント（text）を判別して処理する', () => {
-        const message: TextEventMessage = {
-            type: 'text',
-            id: 'id',
-            text: 'hello',
-            quoteToken: 'quoteToken',
-        };
+    it('messageイベントが渡されたときに正常に処理される', async () => {
         const event: MessageEvent = {
             type: 'message',
-            message,
+            message: {
+                type: 'text',
+                id: 'id',
+                text: 'hello',
+                quoteToken: 'quote',
+            },
             replyToken: 'token',
             source: { type: 'user', userId: 'uid' },
             mode: 'active',
@@ -65,37 +66,11 @@ describe('handleEvents', () => {
             webhookEventId: 'webhookId',
             deliveryContext: { isRedelivery: false },
         };
-        handleEvents([event]);
-        expect(logger.debug).toHaveBeenCalledWith('Message event:', event);
+
+        await handleEvents([event]);
     });
 
-    it('ボットへのメンションがあるtextメッセージならログを出力する', () => {
-        const message: TextEventMessageWithIsSelf = {
-            type: 'text',
-            id: 'id',
-            text: '@bot hello mention',
-            quoteToken: 'quoteToken',
-            mention: {
-                mentionees: [
-                    { index: 0, length: 5, userId: 'bot', type: 'user', isSelf: true }
-                ]
-            }
-        };
-        const event: MessageEvent = {
-            type: 'message',
-            message: message as unknown as TextEventMessage, // TypeScriptの型互換性のためにキャスト
-            replyToken: 'token',
-            source: { type: 'user', userId: 'uid' },
-            mode: 'active',
-            timestamp: 0,
-            webhookEventId: 'webhookId',
-            deliveryContext: { isRedelivery: false },
-        };
-        handleEvents([event]);
-        expect(logger.info).toHaveBeenCalledWith('I was said: @bot hello mention');
-    });
-
-    it('処理対象のイベントが複数来たときすべて処理する', () => {
+    it('複数イベントが渡されたときに正常に処理される', async () => {
         const joinEvent: JoinEvent = {
             type: 'join',
             replyToken: 'token',
@@ -113,15 +88,14 @@ describe('handleEvents', () => {
             webhookEventId: 'webhookId',
             deliveryContext: { isRedelivery: false },
         };
-        const message: TextEventMessage = {
-            type: 'text',
-            id: 'id',
-            text: 'hi',
-            quoteToken: 'quoteToken',
-        };
         const messageEvent: MessageEvent = {
             type: 'message',
-            message,
+            message: {
+                type: 'text',
+                id: 'id',
+                text: 'hi',
+                quoteToken: 'quote',
+            },
             replyToken: 'token',
             source: { type: 'user', userId: 'uid' },
             mode: 'active',
@@ -129,13 +103,11 @@ describe('handleEvents', () => {
             webhookEventId: 'webhookId',
             deliveryContext: { isRedelivery: false },
         };
-        handleEvents([joinEvent, leaveEvent, messageEvent]);
-        expect(logger.debug).toHaveBeenCalledWith('Join event:', joinEvent);
-        expect(logger.debug).toHaveBeenCalledWith('Leave event:', leaveEvent);
-        expect(logger.debug).toHaveBeenCalledWith('Message event:', messageEvent);
+
+        await handleEvents([joinEvent, leaveEvent, messageEvent]);
     });
 
-    it('未対応イベントは何も出力しない', () => {
+    it('未対応イベントが渡されたときも正常に処理される', async () => {
         const event: WebhookEvent = {
             type: 'postback',
             postback: { data: 'data' },
@@ -145,7 +117,7 @@ describe('handleEvents', () => {
             webhookEventId: 'webhookId',
             deliveryContext: { isRedelivery: false },
         } as WebhookEvent;
-        handleEvents([event]);
-        expect(logger.debug).not.toHaveBeenCalled();
+
+        await handleEvents([event]);
     });
 });

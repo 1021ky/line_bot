@@ -1,14 +1,20 @@
-import { JoinEvent, LeaveEvent, MessageEvent, WebhookEvent, EventMessage } from '@line/bot-sdk';
+import { JoinEvent, LeaveEvent, MessageEvent, WebhookEvent, messagingApi } from '@line/bot-sdk';
 import logger from '../../log/logger';
-import { TextEventMessageWithIsSelf } from '../../types/external/text-event-message-with-isself';
+import { MessageEventHandler } from './messageEventHandler';
+
+export interface EventHandler {
+    handle(event: MessageEvent): Promise<void>;
+}
 
 /**
  * LINE Messaging APIのWebhookイベントを処理する関数
- * @param events WebhookEventの配列
+ *
+ * @param events - Webhookイベントの配列
  */
-export function handleEvents(events: WebhookEvent[]) {
-    logger.info('events:', events)
-    events.forEach(event => {
+export async function handleEvents(events: WebhookEvent[]): Promise<void> {
+    logger.info('events:', events);
+
+    await Promise.all(events.map(async (event) => {
         if (event.type === 'join') {
             const joinEvent = event as JoinEvent;
             logger.debug('Join event:', joinEvent);
@@ -18,18 +24,17 @@ export function handleEvents(events: WebhookEvent[]) {
         } else if (event.type === 'message') {
             const messageEvent = event as MessageEvent;
             logger.debug('Message event:', messageEvent);
-            handleEventMessage(messageEvent);
+            const client = createLineClient();
+            const botName = process.env.LINE_BOT_NAME || 'bot';
+            const messageEventHandler = new MessageEventHandler(client, botName);
+            await messageEventHandler.handle(messageEvent);
         }
-    });
+    }));
 }
 
-function handleEventMessage(event: MessageEvent) {
-    const message = event.message as EventMessage;
-    // TODO: 対応対象であるか判別する関数を定義して、ここで呼び出す
-    if (message.type === 'text') {
-        const textMessage = message as TextEventMessageWithIsSelf;
-        if (textMessage.mention && textMessage.mention.mentionees && textMessage.mention.mentionees.some(m => m.isSelf)) {
-            logger.info('I was said: ' + textMessage.text);
-        }
-    }
+function createLineClient() {
+    const client = new messagingApi.MessagingApiClient({
+        channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
+    });
+    return client;
 }
