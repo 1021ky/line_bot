@@ -25,12 +25,12 @@ export function handleEvents(events: WebhookEvent[]) {
         } else if (event.type === 'message') {
             const messageEvent = event as MessageEvent;
             logger.debug('Message event:', messageEvent);
-            handleEventMessage(messageEvent);
+            handleMessageEvent(messageEvent);
         }
     });
 }
 
-function handleEventMessage(event: MessageEvent) {
+function handleMessageEvent(event: MessageEvent) {
     const message = event.message as EventMessage;
     // TODO: 対応対象であるか判別する関数を定義して、ここで呼び出す
     if (message.type === 'text') {
