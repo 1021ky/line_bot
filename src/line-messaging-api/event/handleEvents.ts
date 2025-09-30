@@ -44,7 +44,7 @@ function handleMessageEvent(event: MessageEvent) {
 
 
 
-function isGroupEventSource(event: WebhookEvent): event is MessageEvent {
+function isGroupEventSource(event: WebhookEvent): event is MessageEvent & { source: { type: 'group', groupId: string } } {
     return event.type === 'message' && event.source.type === 'group';
 }
 
