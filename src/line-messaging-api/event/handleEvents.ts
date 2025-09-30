@@ -9,10 +9,6 @@ import { messagingApi } from '@line/bot-sdk';
  * @param events - Webhookイベントの配列
  */
 // TODO: 具体的な処理内容はドメイン層で定義して、引数で渡すようにする
-/**
- * LINE Messaging APIのWebhookイベントを処理する関数
- * @param events WebhookEventの配列
- */
 export function handleEvents(events: WebhookEvent[]) {
     logger.info('events:', events)
     events.forEach(event => {
