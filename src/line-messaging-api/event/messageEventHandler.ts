@@ -16,22 +16,20 @@ export class MessageEventHandler implements EventHandler {
     }
 
     async handle(event: MessageEvent): Promise<void> {
-        const textMessage = this.extractTextMessage(event);
         if (!this.shouldReplyToMessage(event)) {
             return;
         }
 
+        const textMessage = this.extractTextMessage(event);
         if (!textMessage) {
             return;
         }
-
         const to = this.extractAddress(event);
         if (!to) {
             return;
         }
 
         const replyMessage = this.makeReplyMessage(textMessage.text);
-
         try {
             await this.lineClient.pushMessage({
                 to,
