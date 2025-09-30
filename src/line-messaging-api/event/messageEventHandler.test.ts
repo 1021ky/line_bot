@@ -85,7 +85,8 @@ describe('MessageEventHandler', () => {
         expect(lineClient.pushMessage).not.toHaveBeenCalled();
     });
 
-    it('グループ以外のソースならpushMessageを送信しない', async () => {
+    // 古いバージョンでしか存在しない複数人トークは対応しない
+    it('グループとユーザー以外のソースならpushMessageを送信しない', async () => {
         const message: TextEventMessageWithIsSelf = {
             type: 'text',
             id: 'id',
@@ -101,7 +102,7 @@ describe('MessageEventHandler', () => {
             type: 'message',
             message: message as unknown as TextEventMessage,
             replyToken: 'token',
-            source: { type: 'user', userId: 'uid' },
+            source: { type: 'room', roomId: 'rid' },
             mode: 'active',
             timestamp: 0,
             webhookEventId: 'webhookId',

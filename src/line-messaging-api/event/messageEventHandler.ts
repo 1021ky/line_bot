@@ -17,15 +17,15 @@ export class MessageEventHandler implements EventHandler {
 
     async handle(event: MessageEvent): Promise<void> {
         const textMessage = this.extractTextMessage(event);
+        if (!this.shouldReplyToMessage(event)) {
+            return;
+        }
+
         if (!textMessage) {
             return;
         }
 
-        if (!this.isMentionToSelf(textMessage)) {
-            return;
-        }
-
-        const to = this.extractGroupId(event);
+        const to = this.extractAddress(event);
         if (!to) {
             return;
         }
@@ -49,19 +49,35 @@ export class MessageEventHandler implements EventHandler {
         return event.message as TextEventMessageWithIsSelf;
     }
 
-    private isMentionToSelf(message: TextEventMessageWithIsSelf): boolean {
+    private shouldReplyToMessage(event: MessageEvent): boolean {
+        if (event.message.type !== 'text') {
+            return false;
+        }
+
+        // グループ内の他のメンバー向けのメッセージに反応しないようにする
+        if (event.source.type === 'group' && !this.isMentionToSelf(event)) {
+            return false;
+        }
+
+        return true;
+    }
+    private isMentionToSelf(event: MessageEvent): boolean {
+        const message = event.message as TextEventMessageWithIsSelf;
         return Boolean(message.mention?.mentionees?.some(mention => mention.isSelf));
     }
 
-    private extractGroupId(event: MessageEvent): string | null {
+    private extractAddress(event: MessageEvent): string | null {
         if (event.source.type === 'group') {
             return event.source.groupId;
+        } else if (event.source.type === 'user') {
+            return event.source.userId;
         }
         return null;
     }
 
     private makeReplyMessage(text: string): string {
-        const replacedText = text.replace(`@${this.botName} `, '');
-        return `You mentioned me with: ${replacedText}`;
+
+        const cleanText = text.replace(new RegExp(`^\\s*@${this.botName}(\\s|\\b|$)`), '');
+        return `You mentioned me with: ${cleanText}`;
     }
 }
