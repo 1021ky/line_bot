@@ -17,18 +17,18 @@ jobs:
       # setup for build
 
       - name: Checkout repository
-        uses: 'actions/checkout@v4'
+        uses: "actions/checkout@v4"
 
       - name: Install pnpm
-        uses: 'pnpm/action-setup@v2'
+        uses: "pnpm/action-setup@v2"
         with:
           version: 10
       - name: Set up Node.js
-        uses: 'actions/setup-node@v4'
+        uses: "actions/setup-node@v4"
         with:
           node-version-file: .node-version
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
       - name: Install dependencies
         run: pnpm install
@@ -39,11 +39,11 @@ jobs:
 
       # setup for deployment
       - name: Set up Google Cloud credentials
-        uses: 'google-github-actions/auth@v2'
+        uses: "google-github-actions/auth@v2"
         with:
-          project_id: 'linebot-460513'
-          workload_identity_provider: 'projects/643300078736/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-          service_account: 'cloudrun-deployer@linebot-460513.iam.gserviceaccount.com'
+          project_id: "linebot-460513"
+          workload_identity_provider: "projects/643300078736/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "cloudrun-deployer@linebot-460513.iam.gserviceaccount.com"
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
@@ -61,3 +61,4 @@ jobs:
             --trigger-http \
             --allow-unauthenticated \
             --service-account=cloudrun-deployer@linebot-460513.iam.gserviceaccount.com
+            --set-env-vars "LINE_BOT_NAME=やまなかぁボット"
